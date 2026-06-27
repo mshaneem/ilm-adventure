@@ -320,6 +320,200 @@ const APP_DATA = {
           options: ["Cut or trim their hair", "Plant a tree", "Build a house", "Paint the Kaaba"], answer: 0,
           explain: "Men shave or trim their hair, and women cut a tiny piece of hair." }
       ]
+    },
+
+    /* ---------- CHAPTER 5 ---------- */
+    {
+      id: "prayers",
+      title: "The Five Daily Prayers",
+      short: "Prayer Times",
+      emoji: "🕰️",
+      tagline: "The five daily prayers, their times and Rakat.",
+      blocks: [
+        {
+          type: "lead",
+          text: "Muslims pray five times every day: Fajr, Dhuhr, Asr, Maghrib and Isha. Each prayer has its own time, based on the position of the sun, and a number of Rakat (units of prayer). Tap each card to learn more! 🌅"
+        },
+        {
+          type: "flipgrid",
+          cards: [
+            { emoji: "🌅", front: "Fajr", sub: "Dawn", back: "Before sunrise, at dawn. 2 Rakat." },
+            { emoji: "☀️", front: "Dhuhr", sub: "Midday", back: "After the sun passes its highest point, at midday. 4 Rakat." },
+            { emoji: "🌤️", front: "Asr", sub: "Afternoon", back: "In the late afternoon. 4 Rakat." },
+            { emoji: "🌇", front: "Maghrib", sub: "Sunset", back: "At dusk or just after sunset. 3 Rakat." },
+            { emoji: "🌙", front: "Isha", sub: "Night", back: "Between sunset and midnight. 4 Rakat." }
+          ]
+        },
+        {
+          type: "ordergame",
+          title: "Game: Put the prayers in order!",
+          intro: "The five daily prayers are all mixed up! Use the ⬆ and ⬇ arrows (or drag them on a computer) to put them in the right order, from the first prayer of the day to the last. ⏰",
+          steps: [
+            { emoji: "🌅", label: "Fajr", hint: "dawn" },
+            { emoji: "☀️", label: "Dhuhr", hint: "midday" },
+            { emoji: "🌤️", label: "Asr", hint: "afternoon" },
+            { emoji: "🌇", label: "Maghrib", hint: "sunset" },
+            { emoji: "🌙", label: "Isha", hint: "night" }
+          ]
+        },
+        {
+          type: "callout",
+          emoji: "⏰",
+          title: "The order of the day",
+          text: "Fajr → Dhuhr → Asr → Maghrib → Isha",
+          meaning: "Prayer times follow the position of the sun, from dawn until night."
+        }
+      ],
+      quiz: [
+        { q: "How many prayers do Muslims pray every day?",
+          options: ["5", "3", "4", "6"], answer: 0,
+          explain: "Muslims pray five daily prayers: Fajr, Dhuhr, Asr, Maghrib and Isha." },
+        { q: "Which prayer is prayed at dawn, before sunrise?",
+          options: ["Fajr", "Dhuhr", "Maghrib", "Isha"], answer: 0,
+          explain: "Fajr is prayed before sunrise, at dawn." },
+        { q: "How many Rakat is the Fajr prayer?",
+          options: ["2", "3", "4", "5"], answer: 0,
+          explain: "Fajr is 2 Rakat." },
+        { q: "Which prayer is prayed at midday, after the sun passes its highest point?",
+          options: ["Dhuhr", "Asr", "Fajr", "Maghrib"], answer: 0,
+          explain: "Dhuhr is prayed at midday." },
+        { q: "Which prayer is prayed in the late afternoon?",
+          options: ["Asr", "Dhuhr", "Isha", "Fajr"], answer: 0,
+          explain: "Asr is the late afternoon prayer." },
+        { q: "Which prayer is prayed at dusk, just after sunset?",
+          options: ["Maghrib", "Isha", "Asr", "Fajr"], answer: 0,
+          explain: "Maghrib is prayed just after sunset." },
+        { q: "How many Rakat is the Maghrib prayer?",
+          options: ["3", "2", "4", "5"], answer: 0,
+          explain: "Maghrib is 3 Rakat." },
+        { q: "Which prayer is prayed between sunset and midnight?",
+          options: ["Isha", "Maghrib", "Asr", "Dhuhr"], answer: 0,
+          explain: "Isha is prayed between sunset and midnight." },
+        { q: "How many Rakat are Dhuhr, Asr and Isha each?",
+          options: ["4", "2", "3", "5"], answer: 0,
+          explain: "Dhuhr, Asr and Isha are each 4 Rakat." },
+        { q: "Prayer times are based on the position of what in the sky?",
+          options: ["The sun", "The moon", "The stars", "The clouds"], answer: 0,
+          explain: "The prayer times are based on the position of the sun." },
+        { q: "Which is the LAST of the five prayers each day?",
+          options: ["Isha", "Maghrib", "Fajr", "Asr"], answer: 0,
+          explain: "Isha, prayed between sunset and midnight, is the last prayer of the day." }
+      ]
+    },
+
+    /* ---------- CHAPTER 6 ---------- */
+    {
+      id: "fatiha",
+      title: "The Meaning of Surah Al-Fatiha",
+      short: "Al-Fatiha",
+      emoji: "📿",
+      tagline: "What each verse of Surah Al-Fatiha means.",
+      blocks: [
+        {
+          type: "lead",
+          text: "Surah Al-Fatiha is a very special surah. Let's learn what each of its seven verses means. Read through them, then test yourself! 🤍"
+        },
+        {
+          type: "timeline",
+          events: [
+            { label: "Verse 1", emoji: "1️⃣", text: "In the name of Allah, the Most Gracious, the Most Merciful." },
+            { label: "Verse 2", emoji: "2️⃣", text: "All praise is for Allah, the Lord of all the worlds." },
+            { label: "Verse 3", emoji: "3️⃣", text: "The Most Gracious, the Most Merciful." },
+            { label: "Verse 4", emoji: "4️⃣", text: "Master of the Day of Judgment." },
+            { label: "Verse 5", emoji: "5️⃣", text: "You alone we worship, and You alone we ask for help." },
+            { label: "Verse 6", emoji: "6️⃣", text: "Guide us to the straight path." },
+            { label: "Verse 7", emoji: "7️⃣", text: "The path of those You have blessed, not of those who have earned Your anger, nor of those who have gone astray." }
+          ]
+        }
+      ],
+      quiz: [
+        { q: "How does Verse 1 begin?",
+          options: ["In the name of Allah", "All praise is for Allah", "Master of the Day of Judgment", "Guide us to the straight path"], answer: 0,
+          explain: "Verse 1: “In the name of Allah, the Most Gracious, the Most Merciful.”" },
+        { q: "“In the name of Allah, the Most Gracious, the Most ___.”",
+          options: ["Merciful", "Powerful", "Holy", "Wise"], answer: 0,
+          explain: "“…the Most Gracious, the Most Merciful.”" },
+        { q: "“All praise is for Allah, the Lord of all the ___.”",
+          options: ["worlds", "people", "angels", "skies"], answer: 0,
+          explain: "Verse 2: “All praise is for Allah, the Lord of all the worlds.”" },
+        { q: "Which verse means “Master of the Day of Judgment”?",
+          options: ["Verse 4", "Verse 2", "Verse 6", "Verse 7"], answer: 0,
+          explain: "Verse 4: “Master of the Day of Judgment.”" },
+        { q: "“You alone we worship, and You alone we ask for ___.”",
+          options: ["help", "money", "food", "rain"], answer: 0,
+          explain: "Verse 5: “You alone we worship, and You alone we ask for help.”" },
+        { q: "In Verse 6, what do we ask Allah to guide us to?",
+          options: ["The straight path", "A long life", "Lots of food", "A big house"], answer: 0,
+          explain: "Verse 6: “Guide us to the straight path.”" },
+        { q: "Verse 7 asks for the path of those Allah has ___.",
+          options: ["blessed", "forgotten", "punished", "tested"], answer: 0,
+          explain: "Verse 7: “The path of those You have blessed…”" },
+        { q: "How many verses does Surah Al-Fatiha have?",
+          options: ["7", "5", "10", "3"], answer: 0,
+          explain: "Surah Al-Fatiha has 7 verses." }
+      ]
+    },
+
+    /* ---------- CHAPTER 7 ---------- */
+    {
+      id: "names",
+      title: "The First 10 Names of Allah",
+      short: "Names of Allah",
+      emoji: "💫",
+      tagline: "Ten beautiful names of Allah and their meanings.",
+      blocks: [
+        {
+          type: "lead",
+          text: "Allah has many beautiful names. Here are the first ten and what they mean. Tap each card to flip it and see the meaning! 💫"
+        },
+        {
+          type: "flipgrid",
+          cards: [
+            { emoji: "💗", front: "Ar-Rahman", sub: "Name of Allah", back: "The Most Gracious — the One whose mercy and kindness reaches all of creation." },
+            { emoji: "💞", front: "Ar-Raheem", sub: "Name of Allah", back: "The Most Merciful — the One who shows special, lasting mercy to the believers." },
+            { emoji: "👑", front: "Al-Malik", sub: "Name of Allah", back: "The King — the Sovereign and Owner of everything that exists." },
+            { emoji: "🤍", front: "Al-Quddus", sub: "Name of Allah", back: "The Most Holy — the Pure One, free from any fault or imperfection." },
+            { emoji: "🕊️", front: "As-Salam", sub: "Name of Allah", back: "The Source of Peace — the One who is perfect and gives safety and peace to others." },
+            { emoji: "🛡️", front: "Al-Mu'min", sub: "Name of Allah", back: "The Giver of Faith — the One who grants security and keeps His promises." },
+            { emoji: "👁️", front: "Al-Muhaymin", sub: "Name of Allah", back: "The Guardian — the Protector and Watcher over all of creation." },
+            { emoji: "💪", front: "Al-Aziz", sub: "Name of Allah", back: "The Almighty — the All-Powerful who can never be overcome." },
+            { emoji: "🔧", front: "Al-Jabbar", sub: "Name of Allah", back: "The Compeller — the One whose will is always carried out, and who mends what is broken." },
+            { emoji: "🌟", front: "Al-Mutakabbir", sub: "Name of Allah", back: "The Supreme — the Greatest, the One who is truly worthy of all majesty and pride." }
+          ]
+        }
+      ],
+      quiz: [
+        { q: "What does Ar-Rahman mean?",
+          options: ["The Most Gracious", "The King", "The Guardian", "The Supreme"], answer: 0,
+          explain: "Ar-Rahman — The Most Gracious, whose mercy reaches all of creation." },
+        { q: "What does Ar-Raheem mean?",
+          options: ["The Most Merciful", "The Most Holy", "The Almighty", "The Compeller"], answer: 0,
+          explain: "Ar-Raheem — The Most Merciful, who shows special, lasting mercy to the believers." },
+        { q: "Which name means “The King”?",
+          options: ["Al-Malik", "Al-Quddus", "As-Salam", "Al-Aziz"], answer: 0,
+          explain: "Al-Malik — The King, the Owner of everything that exists." },
+        { q: "What does Al-Quddus mean?",
+          options: ["The Most Holy", "The King", "The Guardian", "The Source of Peace"], answer: 0,
+          explain: "Al-Quddus — The Most Holy, the Pure One, free from any fault." },
+        { q: "Which name means “The Source of Peace”?",
+          options: ["As-Salam", "Al-Mu'min", "Al-Malik", "Al-Mutakabbir"], answer: 0,
+          explain: "As-Salam — The Source of Peace, who gives safety and peace to others." },
+        { q: "What does Al-Mu'min mean?",
+          options: ["The Giver of Faith", "The Almighty", "The Most Gracious", "The King"], answer: 0,
+          explain: "Al-Mu'min — The Giver of Faith, who grants security and keeps His promises." },
+        { q: "What does Al-Muhaymin mean?",
+          options: ["The Guardian", "The Compeller", "The Most Merciful", "The Supreme"], answer: 0,
+          explain: "Al-Muhaymin — The Guardian, the Protector and Watcher over all of creation." },
+        { q: "Which name means “The Almighty”, the All-Powerful who can never be overcome?",
+          options: ["Al-Aziz", "Al-Jabbar", "Al-Malik", "Al-Quddus"], answer: 0,
+          explain: "Al-Aziz — The Almighty, who can never be overcome." },
+        { q: "What does Al-Jabbar mean?",
+          options: ["The Compeller", "The Guardian", "The Source of Peace", "The Most Holy"], answer: 0,
+          explain: "Al-Jabbar — The Compeller, whose will is always carried out, and who mends what is broken." },
+        { q: "What does Al-Mutakabbir mean?",
+          options: ["The Supreme", "The King", "The Giver of Faith", "The Almighty"], answer: 0,
+          explain: "Al-Mutakabbir — The Supreme, the Greatest, worthy of all majesty." }
+      ]
     }
   ],
 
@@ -358,7 +552,21 @@ const APP_DATA = {
     { q: "Throwing pebbles reminds us of which Prophet refusing Shaytan?",
       options: ["Ibrahim (AS)", "Musa (AS)", "Ismail (AS)", "Isa (AS)"], answer: 0, explain: "Prophet Ibrahim (AS)." },
     { q: "Which Eid is celebrated during Hajj?",
-      options: ["Eid al-Adha", "Eid al-Fitr", "Eid Milad", "Eid Ghadir"], answer: 0, explain: "Eid al-Adha." }
+      options: ["Eid al-Adha", "Eid al-Fitr", "Eid Milad", "Eid Ghadir"], answer: 0, explain: "Eid al-Adha." },
+    { q: "Which prayer is prayed at dawn, before sunrise?",
+      options: ["Fajr", "Dhuhr", "Maghrib", "Isha"], answer: 0, explain: "Fajr is the dawn prayer." },
+    { q: "How many Rakat is the Maghrib prayer?",
+      options: ["3", "2", "4", "5"], answer: 0, explain: "Maghrib is 3 Rakat." },
+    { q: "Which is the last of the five daily prayers?",
+      options: ["Isha", "Maghrib", "Asr", "Fajr"], answer: 0, explain: "Isha, between sunset and midnight." },
+    { q: "In Surah Al-Fatiha, what do we ask Allah to guide us to?",
+      options: ["The straight path", "A long life", "A big house", "Lots of food"], answer: 0, explain: "“Guide us to the straight path.”" },
+    { q: "“All praise is for Allah, the Lord of all the ___.” (Al-Fatiha)",
+      options: ["worlds", "people", "angels", "skies"], answer: 0, explain: "Verse 2 of Surah Al-Fatiha." },
+    { q: "What does the name Ar-Rahman mean?",
+      options: ["The Most Gracious", "The King", "The Guardian", "The Supreme"], answer: 0, explain: "Ar-Rahman — The Most Gracious." },
+    { q: "Which name of Allah means “The King”?",
+      options: ["Al-Malik", "Al-Quddus", "As-Salam", "Al-Aziz"], answer: 0, explain: "Al-Malik — The King." }
   ],
 
   /* Pairs for the Memory Match game (Fun Zone).
@@ -373,6 +581,11 @@ const APP_DATA = {
     { a: "Tawaf", b: "Walk around the Kaaba 7 times" },
     { a: "Ihram", b: "Special simple clothes" },
     { a: "Sai", b: "Walk between Safa & Marwa" },
-    { a: "Arafat", b: "Place of the last sermon" }
+    { a: "Arafat", b: "Place of the last sermon" },
+    { a: "Fajr", b: "Dawn prayer (2 Rakat)" },
+    { a: "Maghrib", b: "Sunset prayer (3 Rakat)" },
+    { a: "Al-Fatiha", b: "The opening surah (7 verses)" },
+    { a: "Ar-Rahman", b: "The Most Gracious" },
+    { a: "Al-Malik", b: "The King" }
   ]
 };
