@@ -1,0 +1,14 @@
+{
+  "name": "Ilm Adventure",
+  "short_name": "Ilm Adventure",
+  "description": "A fun, interactive way for kids to learn the Five Pillars, the Prophet's ﷺ early life, Salah duas and Hajj.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3e6ff",
+  "theme_color": "#9b5de5",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

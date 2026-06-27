@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff77c8"/>
+      <stop offset="1" stop-color="#7b2ff7"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- crescent moon -->
+  <path d="M330 150a118 118 0 1 0 0 212 96 96 0 1 1 0-212z" fill="#fff"/>
+  <!-- big star -->
+  <path d="M372 196l16 34 37 5-27 26 7 37-33-18-33 18 7-37-27-26 37-5z" fill="#ffd45e"/>
+  <!-- sparkles -->
+  <g fill="#fff">
+    <path d="M150 360l8 18 18 8-18 8-8 18-8-18-18-8 18-8z"/>
+    <path d="M380 360l6 13 13 6-13 6-6 13-6-13-13-6 13-6z"/>
+    <circle cx="200" cy="150" r="9"/>
+  </g>
+</svg>
