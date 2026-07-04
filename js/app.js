@@ -1,5 +1,8 @@
 /* =========================================================
    ILM ADVENTURE — app logic
+   Now supports TWO exams (Islamic Studies + Tajweed).
+   The learner picks an exam with the tabs on the home screen;
+   each exam keeps its own chapters, track, final quiz and games.
    ========================================================= */
 (function () {
   "use strict";
@@ -24,31 +27,78 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+  /* Wrap runs of Arabic letters in a <span class="ar"> so they render
+     big and clear with the right (right-to-left) direction. Always
+     escape first, then wrap — Arabic characters are never HTML-special. */
+  const AR_RUN = /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿][؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿\s]*/g;
+  const rich = (s) => esc(s).replace(AR_RUN, (m) => {
+    const trimmed = m.replace(/\s+$/, "");
+    const trail = m.slice(trimmed.length);
+    return `<span class="ar">${trimmed}</span>${trail}`;
+  });
+
   /* ---------- saved progress ---------- */
   const STORE_KEY = "ilmAdventure.v1";
+  const emptyExam = () => ({ modules: {}, final: null, games: {}, memoryBest: null });
   const defaultState = () => ({
     name: "",
     sound: true,
-    modules: {},   // id -> { done:true, score, total, stars }
-    final: null,   // { score, total, stars }
-    bestMoves: null,
-    games: {}      // mini-games solved, e.g. { hajjOrder: true }
+    currentExam: "islamic",
+    exams: {}      // examId -> { modules, final, games, memoryBest }
   });
   let state = load();
 
   function load() {
+    let s = null;
     try {
       const raw = localStorage.getItem(STORE_KEY);
-      if (raw) return Object.assign(defaultState(), JSON.parse(raw));
+      if (raw) s = JSON.parse(raw);
     } catch (e) { /* ignore */ }
-    return defaultState();
+    if (!s) return defaultState();
+    s = Object.assign(defaultState(), s);
+    if (!s.exams) s.exams = {};
+    // migrate the old (single-exam) save shape into exams.islamic
+    if (s.modules || s.final || s.games || s.bestMoves != null) {
+      const isl = s.exams.islamic || emptyExam();
+      if (s.modules) isl.modules = Object.assign(isl.modules || {}, s.modules);
+      if (s.final && !isl.final) isl.final = s.final;
+      if (s.games) isl.games = Object.assign(isl.games || {}, s.games);
+      if (s.bestMoves != null && isl.memoryBest == null) isl.memoryBest = s.bestMoves;
+      s.exams.islamic = isl;
+      delete s.modules; delete s.final; delete s.games; delete s.bestMoves;
+    }
+    if (!s.currentExam) s.currentExam = "islamic";
+    return s;
   }
   function save() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
   }
 
-  /* track order = modules then final quiz then finish */
-  const MODULES = APP_DATA.modules;
+  /* ---------- exams ---------- */
+  const EXAMS = APP_DATA.exams;
+  let MODULES = [];                       // chapters of the current exam
+
+  function curExam() { return EXAMS.find((e) => e.id === state.currentExam) || EXAMS[0]; }
+  function P() {                          // progress bucket for the current exam
+    const id = curExam().id;
+    if (!state.exams[id]) state.exams[id] = emptyExam();
+    return state.exams[id];
+  }
+  function examProgress(id) { return state.exams[id] || emptyExam(); }
+  function setExam(id) {
+    if (!EXAMS.some((e) => e.id === id)) return;
+    state.currentExam = id;
+    MODULES = curExam().modules;
+    save();
+  }
+  function examDoneCount(ex) {
+    const p = examProgress(ex.id);
+    return ex.modules.filter((m) => p.modules[m.id] && p.modules[m.id].done).length;
+  }
+  function allChaptersDone() {
+    const p = P();
+    return MODULES.every((m) => p.modules[m.id] && p.modules[m.id].done);
+  }
 
   /* ---------- sound (Web Audio, no files needed) ---------- */
   let audioCtx = null;
@@ -124,10 +174,14 @@
     $("#star-count").textContent = totalStars();
     $("#sound-btn").textContent = state.sound ? "🔊" : "🔇";
   }
+  // all the stars she has earned, across BOTH exams
   function totalStars() {
     let s = 0;
-    MODULES.forEach((m) => { if (state.modules[m.id]) s += state.modules[m.id].stars || 0; });
-    if (state.final) s += state.final.stars || 0;
+    EXAMS.forEach((ex) => {
+      const p = examProgress(ex.id);
+      ex.modules.forEach((m) => { if (p.modules[m.id]) s += p.modules[m.id].stars || 0; });
+      if (p.final) s += p.final.stars || 0;
+    });
     return s;
   }
 
@@ -148,23 +202,52 @@
   }
 
   /* ===================================================
-     HOME  (track + module cards)
+     HOME  (exam tabs + track + module cards + fun zone)
      =================================================== */
   function goHome() {
+    if (!EXAMS.some((e) => e.id === state.currentExam)) state.currentExam = EXAMS[0].id;
+    MODULES = curExam().modules;
     $("#home-greeting").textContent = "Assalamu Alaikum, " + state.name + "! 🌸";
+    renderExamTabs();
     renderTrack();
     renderModuleCards();
-    updateFinalCard();
-    updateOrderCard();
+    updateFunZone();
     show("screen-home");
     refreshHeader();
+  }
+
+  function renderExamTabs() {
+    const wrap = $("#exam-tabs");
+    if (!wrap) return;
+    wrap.innerHTML = "";
+    EXAMS.forEach((ex) => {
+      const done = examDoneCount(ex);
+      const total = ex.modules.length;
+      const complete = done === total;
+      const tab = el("button", "exam-tab" + (ex.id === state.currentExam ? " active" : ""));
+      tab.innerHTML =
+        `<span class="et-emoji">${ex.emoji}</span>
+         <span class="et-body">
+           <span class="et-title">${esc(ex.title)}</span>
+           <span class="et-sub">${esc(ex.subtitle)}</span>
+         </span>
+         <span class="et-badge">${complete ? "✅ Done" : done + "/" + total}</span>`;
+      tab.addEventListener("click", () => {
+        if (ex.id === state.currentExam) return;
+        sfx.click(); setExam(ex.id); goHome();
+      });
+      wrap.appendChild(tab);
+    });
+    const tag = $("#exam-blurb");
+    if (tag) tag.textContent = curExam().blurb;
   }
 
   function renderModuleCards() {
     const grid = $("#module-grid");
     grid.innerHTML = "";
+    const p = P();
     MODULES.forEach((m, i) => {
-      const prog = state.modules[m.id];
+      const prog = p.modules[m.id];
       const done = prog && prog.done;
       const card = el("button", "module-card" + (done ? " done" : ""));
       const stars = done ? "⭐".repeat(prog.stars) + "☆".repeat(3 - prog.stars) : "";
@@ -181,24 +264,42 @@
     });
   }
 
-  function updateOrderCard() {
-    const desc = $("#order-card-desc");
-    if (!desc) return;
-    const r = orderRecord();
-    desc.textContent = (r.solved && r.bestMoves != null)
-      ? `🏅 Best: ${r.bestMoves} moves · ${fmtTime(r.bestTime)}`
-      : "Put the steps of Hajj in order!";
-  }
+  /* keep the three Fun Zone cards in sync with the chosen exam */
+  function updateFunZone() {
+    const ex = curExam();
 
-  function updateFinalCard() {
-    const allDone = MODULES.every((m) => state.modules[m.id] && state.modules[m.id].done);
-    const desc = $("#final-card-desc");
-    if (state.final) {
-      desc.textContent = `Best: ${state.final.score}/${state.final.total} ${"⭐".repeat(state.final.stars)}`;
-    } else if (allDone) {
-      desc.textContent = "You unlocked it! Tap to start 🌟";
-    } else {
-      desc.textContent = "Finish the chapters to power up first!";
+    // 1) Memory Match — same game, this exam's word pairs
+    const memDesc = $("#game-card-desc");
+    if (memDesc) {
+      const mb = P().memoryBest;
+      memDesc.textContent = mb != null ? `🏅 Best: ${mb} tries` : "Match the words to their meanings!";
+    }
+
+    // 2) the exam's signature challenge (order game or sort game)
+    const fg = ex.funGame;
+    const cEmoji = $("#challenge-emoji");
+    const cTitle = $("#challenge-title");
+    const cDesc = $("#challenge-desc");
+    if (fg && cEmoji && cTitle && cDesc) {
+      cEmoji.textContent = fg.emoji;
+      cTitle.textContent = fg.title;
+      const rec = gameRecord(fg.gameId);
+      cDesc.textContent = (rec.solved && rec.bestMoves != null)
+        ? `🏅 Best: ${rec.bestMoves} moves · ${fmtTime(rec.bestTime)}`
+        : fg.desc;
+    }
+
+    // 3) Big Final Quiz
+    const finalDesc = $("#final-card-desc");
+    const p = P();
+    if (finalDesc) {
+      if (p.final) {
+        finalDesc.textContent = `Best: ${p.final.score}/${p.final.total} ${"⭐".repeat(p.final.stars)}`;
+      } else if (allChaptersDone()) {
+        finalDesc.textContent = "You unlocked it! Tap to start 🌟";
+      } else {
+        finalDesc.textContent = "Finish the chapters to power up first!";
+      }
     }
   }
 
@@ -206,6 +307,7 @@
   function renderTrack() {
     const track = $("#track");
     track.innerHTML = "";
+    const p = P();
 
     // checkpoints: start, each module, final, finish
     const points = [{ emoji: "🏁", label: "Start", key: "start" }];
@@ -213,22 +315,21 @@
     points.push({ emoji: "🏆", label: "Final Quiz", key: "final" });
     points.push({ emoji: "👑", label: "Finish!", key: "finish" });
 
-    // how far has she got?
-    let reached = 0; // index of current checkpoint
+    // how far has she got in THIS exam?
+    let reached = 0;
     for (let i = 0; i < MODULES.length; i++) {
-      if (state.modules[MODULES[i].id] && state.modules[MODULES[i].id].done) reached = i + 1;
+      if (p.modules[MODULES[i].id] && p.modules[MODULES[i].id].done) reached = i + 1;
     }
-    const allDone = MODULES.every((m) => state.modules[m.id] && state.modules[m.id].done);
-    if (allDone) reached = MODULES.length + 1;            // at final
-    if (state.final) reached = MODULES.length + 2;        // finished!
+    if (allChaptersDone()) reached = MODULES.length + 1;   // at final
+    if (p.final) reached = MODULES.length + 2;             // finished!
 
-    points.forEach((p, i) => {
+    points.forEach((pt, i) => {
       const cp = el("div", "checkpoint");
       if (i < reached) cp.classList.add("done");
       if (i === reached) cp.classList.add("current");
       cp.innerHTML =
-        `<div class="cp-dot">${p.emoji}</div>
-         <div class="cp-label">${esc(p.label)}</div>
+        `<div class="cp-dot">${pt.emoji}</div>
+         <div class="cp-label">${esc(pt.label)}</div>
          ${i < reached && i !== 0 ? '<span class="cp-check">✅</span>' : ""}`;
       track.appendChild(cp);
     });
@@ -237,18 +338,13 @@
     const runner = el("div", "", "🏃‍♀️");
     runner.id = "runner";
     track.appendChild(runner);
-    // position after layout
     requestAnimationFrame(() => {
       const cps = $$("#track .checkpoint");
       const target = cps[Math.min(reached, cps.length - 1)];
-      if (target) {
-        const left = target.offsetLeft + target.offsetWidth / 2;
-        runner.style.left = left + "px";
-      }
+      if (target) runner.style.left = (target.offsetLeft + target.offsetWidth / 2) + "px";
     });
   }
 
-  // animate the girl moving forward after finishing something
   function celebrateAdvance() {
     renderTrack();
     const runner = $("#runner");
@@ -274,19 +370,25 @@
        <p>${esc(currentModule.tagline)}</p>`);
     box.appendChild(hero);
 
-    // render the lesson blocks, but NOT the order game — that opens on its
-    // own screen (like the quiz) so the steps are shuffled, not copied from the lesson.
-    currentModule.blocks.forEach((b) => { if (b.type !== "ordergame") box.appendChild(renderBlock(b)); });
+    // render the lesson blocks, but NOT the playable games — those open on
+    // their own screen (like the quiz) so the pieces are shuffled fresh.
+    currentModule.blocks.forEach((b) => {
+      if (b.type !== "ordergame" && b.type !== "sortgame") box.appendChild(renderBlock(b));
+    });
 
-    // add a "play the game" button for any module that has an order game
+    // add a "play the game" button if this chapter has a game
     const actions = $(".module-actions");
     const old = $("#module-game-btn");
     if (old) old.remove();
-    const gameBlock = currentModule.blocks.find((b) => b.type === "ordergame");
+    const gameBlock = currentModule.blocks.find((b) => b.type === "ordergame" || b.type === "sortgame");
     if (gameBlock) {
-      const gBtn = el("button", "big-btn alt-btn", "🎯 Play the Order Game");
+      const gBtn = el("button", "big-btn alt-btn", "🎯 Play the Game");
       gBtn.id = "module-game-btn";
-      gBtn.onclick = () => { sfx.click(); startOrderGame(currentModule.id); };
+      gBtn.onclick = () => {
+        sfx.click();
+        openGame(gameBlock.type === "sortgame" ? "sort" : "order",
+                 currentModule.id, gameBlock.id, currentModule.id);
+      };
       actions.appendChild(gBtn);
     }
 
@@ -297,7 +399,7 @@
   function renderBlock(b) {
     switch (b.type) {
       case "lead":
-        return el("p", "lead", esc(b.text));
+        return el("p", "lead", rich(b.text));
 
       case "flipgrid": {
         const grid = el("div", "flip-grid");
@@ -311,12 +413,62 @@
                  <span class="fs">${esc(c.sub)}</span>
                  <span class="tap">tap to flip 🔄</span>
                </div>
-               <div class="flip-face flip-back">${esc(c.back)}</div>
+               <div class="flip-face flip-back">${rich(c.back)}</div>
              </div>`;
           card.addEventListener("click", () => { card.classList.toggle("flipped"); sfx.flip(); });
           grid.appendChild(card);
         });
         return grid;
+      }
+
+      /* Arabic flip cards — big Arabic word on the front, the rule on the back */
+      case "arflip": {
+        const grid = el("div", "flip-grid");
+        b.cards.forEach((c) => {
+          const card = el("button", "flip arflip");
+          card.innerHTML =
+            `<div class="flip-inner">
+               <div class="flip-face flip-front">
+                 <span class="af-ar ar">${esc(c.ar)}</span>
+                 ${c.translit ? `<span class="af-tr">${esc(c.translit)}</span>` : ""}
+                 ${c.sub ? `<span class="fs">${rich(c.sub)}</span>` : ""}
+                 <span class="tap">tap to flip 🔄</span>
+               </div>
+               <div class="flip-face flip-back">${rich(c.back)}</div>
+             </div>`;
+          card.addEventListener("click", () => { card.classList.toggle("flipped"); sfx.flip(); });
+          grid.appendChild(card);
+        });
+        return grid;
+      }
+
+      /* a group of Arabic letters shown as big tiles (heavy / madd / qalqalah) */
+      case "lettertiles": {
+        const wrap = el("div", "letter-tiles " + (b.variant || ""));
+        if (b.note) wrap.appendChild(el("div", "lt-note", rich(b.note)));
+        const grid = el("div", "lt-grid");
+        b.tiles.forEach((t) => {
+          grid.appendChild(el("div", "lt-tile",
+            `<span class="lt-ar ar">${esc(t.ar)}</span>
+             <span class="lt-name">${esc(t.name)}</span>
+             ${t.sub ? `<span class="lt-sub">${rich(t.sub)}</span>` : ""}`));
+        });
+        wrap.appendChild(grid);
+        return wrap;
+      }
+
+      /* the 3 coloured Qalqalah levels */
+      case "levels": {
+        const wrap = el("div", "levels");
+        if (b.title) wrap.appendChild(el("div", "levels-title", rich(b.title)));
+        b.items.forEach((it) => {
+          wrap.appendChild(el("div", "level-card lv-" + it.color,
+            `<div class="lv-badge">${esc(it.name)}</div>
+             <div class="lv-ar ar">${esc(it.ar)}</div>
+             <div class="lv-desc">${rich(it.desc)}</div>
+             ${it.tip ? `<div class="lv-tip">${rich(it.tip)}</div>` : ""}`));
+        });
+        return wrap;
       }
 
       case "timeline": {
@@ -325,8 +477,8 @@
           const item = el("div", "tl-item",
             `<div class="tl-bullet">${ev.emoji}</div>
              <div class="tl-body">
-               <div class="tl-label">${esc(ev.label)}</div>
-               <p class="tl-text">${esc(ev.text)}</p>
+               <div class="tl-label">${rich(ev.label)}</div>
+               <p class="tl-text">${rich(ev.text)}</p>
              </div>`);
           tl.appendChild(item);
         });
@@ -362,59 +514,77 @@
             `<span class="js-emoji">${s.emoji}</span>
              <div><span class="js-day">${esc(s.day)}</span>
                <div class="js-title">${esc(s.title)}</div>
-               <p class="js-text">${esc(s.text)}</p></div>`));
+               <p class="js-text">${rich(s.text)}</p></div>`));
         });
         return wrap;
       }
 
       case "ordergame":
-        return renderOrderGame(b);
+        return renderOrderGame(b, b.id);
+
+      case "sortgame":
+        return renderSortGame(b, b.id);
 
       case "callout":
         return el("div", "callout",
           `<div class="co-emoji">${b.emoji}</div>
-           <div class="co-title">${esc(b.title)}</div>
-           <div class="co-text">${esc(b.text)}</div>
-           ${b.meaning ? `<div class="co-meaning">${esc(b.meaning)}</div>` : ""}`);
+           <div class="co-title">${rich(b.title)}</div>
+           <div class="co-text">${rich(b.text)}</div>
+           ${b.meaning ? `<div class="co-meaning">${rich(b.meaning)}</div>` : ""}`);
 
       default:
         return el("div");
     }
   }
 
-  /* ---------- Hajj "put the steps in order" mini-game ---------- */
-  let orderTimerId = null;
+  /* ===================================================
+     SHARED GAME RECORD (best moves / time), per exam
+     =================================================== */
+  let gameTimerId = null;
 
   function fmtTime(ms) {
     const s = Math.max(0, Math.round(ms / 1000));
     const m = Math.floor(s / 60), r = s % 60;
     return m + ":" + (r < 10 ? "0" + r : r);
   }
-  // normalise the saved record (older saves used a plain `true`)
-  function orderRecord() {
-    state.games = state.games || {};
-    let r = state.games.hajjOrder;
+  function gameRecord(id) {
+    const g = P().games;
+    let r = g[id];
     if (!r || typeof r !== "object") r = { solved: !!r, bestMoves: null, bestTime: null };
     return r;
   }
-  function bestText() {
-    const r = orderRecord();
+  function saveGameRecord(id, moves, elapsed) {
+    const r = gameRecord(id);
+    const newMoves = (r.bestMoves == null || moves < r.bestMoves);
+    const newTime = (r.bestTime == null || elapsed < r.bestTime);
+    r.solved = true;
+    if (newMoves) r.bestMoves = moves;
+    if (newTime) r.bestTime = elapsed;
+    P().games[id] = r;
+    save();
+    return newMoves || newTime;
+  }
+  function bestText(id) {
+    const r = gameRecord(id);
     if (!r.solved || r.bestMoves == null) return "";
     return `🏅 Best: ${r.bestMoves} moves · ${fmtTime(r.bestTime)}`;
   }
+  function stopGameClock() { if (gameTimerId) { clearInterval(gameTimerId); gameTimerId = null; } }
 
-  function renderOrderGame(b) {
+  /* ===================================================
+     ORDER-THE-STEPS GAME
+     =================================================== */
+  function renderOrderGame(b, gameId) {
     const n = b.steps.length;
     const wrap = el("div", "order-game");
     wrap.appendChild(el("div", "og-head",
       `<div class="og-title">🎯 ${esc(b.title)}</div>
        <p class="og-intro">${esc(b.intro)}</p>`));
 
-    // live stats: moves, time, best
     const stats = el("div", "og-stats",
       `<span class="og-stat">🔄 Moves: <b class="og-moves">0</b></span>
        <span class="og-stat">⏱️ Time: <b class="og-time">0:00</b></span>
-       <span class="og-stat og-best">${bestText()}</span>`);
+       <span class="og-stat og-best">${bestText(gameId)}</span>`);
     wrap.appendChild(stats);
     const movesEl = stats.querySelector(".og-moves");
     const timeEl = stats.querySelector(".og-time");
@@ -437,23 +607,17 @@
     const isSorted = (a) => a.every((v, i) => v === i);
     function freshOrder() { let a; do { a = shuffle(range()); } while (n > 1 && isSorted(a)); return a; }
 
-    let order = freshOrder();   // order[position] = original step index
+    let order = freshOrder();
     let dragFrom = null;
     let moves = 0;
     let startTime = null;
 
-    // only one order-game timer alive at a time
-    if (orderTimerId) { clearInterval(orderTimerId); orderTimerId = null; }
+    stopGameClock();
 
     function tick() { if (startTime != null) timeEl.textContent = fmtTime(Date.now() - startTime); }
     function startClock() {
-      if (startTime == null) {
-        startTime = Date.now();
-        if (typeof setInterval === "function") orderTimerId = setInterval(tick, 500);
-      }
+      if (startTime == null) { startTime = Date.now(); gameTimerId = setInterval(tick, 500); }
     }
-    function stopClock() { if (orderTimerId) { clearInterval(orderTimerId); orderTimerId = null; } }
-
     function clearMarks() { banner.innerHTML = ""; banner.className = "og-banner"; }
     function countMove() { moves++; movesEl.textContent = moves; startClock(); }
 
@@ -487,7 +651,6 @@
            </span>`;
         card.querySelector(".os-up").addEventListener("click", (e) => { if (e && e.stopPropagation) e.stopPropagation(); move(pos, -1); });
         card.querySelector(".os-down").addEventListener("click", (e) => { if (e && e.stopPropagation) e.stopPropagation(); move(pos, 1); });
-        // drag & drop (desktop / mouse)
         card.addEventListener("dragstart", () => { dragFrom = pos; card.classList.add("dragging"); });
         card.addEventListener("dragend", () => { card.classList.remove("dragging"); });
         card.addEventListener("dragover", (e) => { if (e && e.preventDefault) e.preventDefault(); });
@@ -506,24 +669,16 @@
         else { card.classList.add("wrong"); allRight = false; }
       });
       if (allRight) {
-        stopClock();
+        stopGameClock();
         const elapsed = startTime != null ? Date.now() - startTime : 0;
-        const r = orderRecord();
-        const newBestMoves = (r.bestMoves == null || moves < r.bestMoves);
-        const newBestTime = (r.bestTime == null || elapsed < r.bestTime);
-        r.solved = true;
-        if (newBestMoves) r.bestMoves = moves;
-        if (newBestTime) r.bestTime = elapsed;
-        state.games.hajjOrder = r;
-        save();
-        bestEl.textContent = bestText();
-        const pb = (newBestMoves || newBestTime) ? " 🌟 New best!" : "";
-        banner.innerHTML = `🎉 MashaAllah! All steps in order in <b>${moves}</b> moves and <b>${fmtTime(elapsed)}</b>!${pb} 🏅`;
+        const pb = saveGameRecord(gameId, moves, elapsed);
+        bestEl.textContent = bestText(gameId);
+        banner.innerHTML = `🎉 MashaAllah! All in order in <b>${moves}</b> moves and <b>${fmtTime(elapsed)}</b>!${pb ? " 🌟 New best!" : ""} 🏅`;
         banner.className = "og-banner good";
         checkBtn.disabled = true;
         sfx.win(); confetti(120);
       } else {
-        banner.innerHTML = "💡 Almost! The green steps are in the right spot. Move the pink ones and try again.";
+        banner.innerHTML = "💡 Almost! The green cards are in the right spot. Move the pink ones and try again.";
         banner.className = "og-banner bad";
         sfx.wrong();
       }
@@ -531,7 +686,7 @@
 
     shuffleBtn.addEventListener("click", () => {
       sfx.click();
-      stopClock(); startTime = null; moves = 0; movesEl.textContent = "0"; timeEl.textContent = "0:00";
+      stopGameClock(); startTime = null; moves = 0; movesEl.textContent = "0"; timeEl.textContent = "0:00";
       order = freshOrder(); checkBtn.disabled = false; clearMarks(); render();
     });
 
@@ -539,18 +694,190 @@
     return wrap;
   }
 
-  /* open the order game on its own screen (from the chapter or the Fun Zone) */
-  let orderReturn = "home";
-  function startOrderGame(returnTo) {
-    orderReturn = returnTo || "home";
-    const mod = MODULES.find((m) => m.id === (orderReturn === "home" ? "hajj" : orderReturn));
-    const block = (mod || MODULES.find((m) => m.id === "hajj")).blocks.find((b) => b.type === "ordergame");
+  /* ===================================================
+     SORT-INTO-BUCKETS GAME  (Tajweed)
+     =================================================== */
+  function renderSortGame(b, gameId) {
+    const items = b.items;
+    const wrap = el("div", "sort-game");
+    wrap.appendChild(el("div", "og-head",
+      `<div class="og-title">🎯 ${esc(b.title)}</div>
+       <p class="og-intro">${rich(b.intro)}</p>`));
+
+    const stats = el("div", "og-stats",
+      `<span class="og-stat">🔄 Moves: <b class="og-moves">0</b></span>
+       <span class="og-stat">⏱️ Time: <b class="og-time">0:00</b></span>
+       <span class="og-stat og-best">${bestText(gameId)}</span>`);
+    wrap.appendChild(stats);
+    const movesEl = stats.querySelector(".og-moves");
+    const timeEl = stats.querySelector(".og-time");
+    const bestEl = stats.querySelector(".og-best");
+
+    // the pool of not-yet-sorted chips
+    const poolWrap = el("div", "sort-pool-wrap",
+      `<div class="sort-pool-label">Tap a letter, then tap a box 👇</div>`);
+    const pool = el("div", "sort-pool");
+    poolWrap.appendChild(pool);
+    wrap.appendChild(poolWrap);
+
+    // the buckets
+    const board = el("div", "sort-board");
+    board.style.setProperty("--buckets", b.buckets.length);
+    b.buckets.forEach((bk) => {
+      const bucket = el("div", "sort-bucket");
+      bucket.dataset.bucket = bk.id;
+      bucket.innerHTML =
+        `<div class="sb-head"><span class="sb-label">${rich(bk.label)}</span>
+           ${bk.hint ? `<span class="sb-hint">${esc(bk.hint)}</span>` : ""}</div>
+         <div class="sb-drop"></div>`;
+      board.appendChild(bucket);
+    });
+    wrap.appendChild(board);
+
+    const controls = el("div", "og-controls");
+    const checkBtn = el("button", "big-btn", "Check my boxes ✅");
+    const resetBtn = el("button", "mini-btn", "🔀 Start over");
+    controls.appendChild(checkBtn);
+    controls.appendChild(resetBtn);
+    wrap.appendChild(controls);
+
+    const banner = el("div", "og-banner");
+    wrap.appendChild(banner);
+
+    let placement = items.map(() => null);   // index -> bucketId or null
+    let selected = null;                      // index of the picked-up chip
+    let moves = 0;
+    let startTime = null;
+
+    stopGameClock();
+
+    function tick() { if (startTime != null) timeEl.textContent = fmtTime(Date.now() - startTime); }
+    function startClock() {
+      if (startTime == null) { startTime = Date.now(); gameTimerId = setInterval(tick, 500); }
+    }
+    function clearMarks() { banner.innerHTML = ""; banner.className = "og-banner"; }
+    function countMove() { moves++; movesEl.textContent = moves; startClock(); }
+
+    function chip(idx, placed) {
+      const it = items[idx];
+      const c = el("button", "sort-chip" + (selected === idx ? " picked" : "") + (placed ? " placed" : ""));
+      c.dataset.idx = idx;
+      c.setAttribute("draggable", "true");
+      c.innerHTML =
+        `<span class="sc-ar ar">${esc(it.ar)}</span>
+         ${it.tip ? `<span class="sc-tip">${esc(it.tip)}</span>` : ""}`;
+      c.addEventListener("click", () => {
+        if (placement[idx]) {                 // tap a placed chip -> back to pool
+          placement[idx] = null; selected = null;
+          countMove(); checkBtn.disabled = false; clearMarks(); sfx.flip(); render();
+        } else {                              // tap a pool chip -> pick it up / drop
+          selected = (selected === idx) ? null : idx;
+          sfx.click(); render();
+        }
+      });
+      c.addEventListener("dragstart", () => { selected = idx; c.classList.add("dragging"); });
+      c.addEventListener("dragend", () => { c.classList.remove("dragging"); });
+      return c;
+    }
+
+    function placeSelected(bucketId) {
+      if (selected == null) return;
+      placement[selected] = bucketId; selected = null;
+      countMove(); checkBtn.disabled = false; clearMarks(); sfx.flip(); render();
+    }
+
+    function render() {
+      pool.innerHTML = "";
+      items.forEach((it, idx) => { if (placement[idx] == null) pool.appendChild(chip(idx, false)); });
+      if (!pool.children.length) pool.appendChild(el("div", "sort-pool-empty", "All sorted — press Check! ✅"));
+
+      board.querySelectorAll(".sort-bucket").forEach((bucket) => {
+        const drop = bucket.querySelector(".sb-drop");
+        drop.innerHTML = "";
+        const bid = bucket.dataset.bucket;
+        bucket.classList.toggle("aim", selected != null);
+        items.forEach((it, idx) => { if (placement[idx] === bid) drop.appendChild(chip(idx, true)); });
+      });
+    }
+
+    // clicking / dropping onto a bucket places the selected chip there
+    board.querySelectorAll(".sort-bucket").forEach((bucket) => {
+      const bid = bucket.dataset.bucket;
+      bucket.addEventListener("click", (e) => {
+        if (e.target.closest(".sort-chip")) return;   // chip handles its own click
+        placeSelected(bid);
+      });
+      bucket.addEventListener("dragover", (e) => { if (e && e.preventDefault) e.preventDefault(); });
+      bucket.addEventListener("drop", (e) => { if (e && e.preventDefault) e.preventDefault(); placeSelected(bid); });
+    });
+
+    checkBtn.addEventListener("click", () => {
+      sfx.click();
+      const allPlaced = placement.every((p) => p != null);
+      if (!allPlaced) {
+        banner.innerHTML = "💡 Put every letter into a box first!";
+        banner.className = "og-banner bad";
+        sfx.wrong();
+        return;
+      }
+      let allRight = true;
+      board.querySelectorAll(".sort-chip").forEach((c) => {
+        const idx = Number(c.dataset.idx);
+        c.classList.remove("right", "wrong");
+        if (placement[idx] === items[idx].cat) c.classList.add("right");
+        else { c.classList.add("wrong"); allRight = false; }
+      });
+      if (allRight) {
+        stopGameClock();
+        const elapsed = startTime != null ? Date.now() - startTime : 0;
+        const pb = saveGameRecord(gameId, moves, elapsed);
+        bestEl.textContent = bestText(gameId);
+        banner.innerHTML = `🎉 MashaAllah! All sorted in <b>${moves}</b> moves and <b>${fmtTime(elapsed)}</b>!${pb ? " 🌟 New best!" : ""} 🏅`;
+        banner.className = "og-banner good";
+        checkBtn.disabled = true;
+        sfx.win(); confetti(120);
+      } else {
+        banner.innerHTML = "💡 Almost! The green ones are in the right box. Tap a pink one to move it and try again.";
+        banner.className = "og-banner bad";
+        sfx.wrong();
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      sfx.click();
+      stopGameClock(); startTime = null; moves = 0; selected = null;
+      movesEl.textContent = "0"; timeEl.textContent = "0:00";
+      placement = items.map(() => null);
+      checkBtn.disabled = false; clearMarks(); render();
+    });
+
+    render();
+    return wrap;
+  }
+
+  /* open a game (order or sort) on its own screen */
+  let gameReturn = "home";
+  function openGame(kind, moduleId, gameId, returnTo) {
+    gameReturn = returnTo || "home";
+    const mod = MODULES.find((m) => m.id === moduleId);
+    if (!mod) return;
+    const wantType = kind === "sort" ? "sortgame" : "ordergame";
+    const block = mod.blocks.find((bl) => bl.type === wantType && (gameId == null || bl.id === gameId))
+                || mod.blocks.find((bl) => bl.type === wantType);
+    if (!block) return;
     const back = $("#order-back");
-    if (back) back.textContent = (orderReturn !== "home") ? "⬅ Back to chapter" : "⬅ Back to track";
+    if (back) back.textContent = (gameReturn !== "home") ? "⬅ Back to chapter" : "⬅ Back to track";
     const host = $("#order-host");
     host.innerHTML = "";
-    if (block) host.appendChild(renderOrderGame(block));
+    host.appendChild(kind === "sort" ? renderSortGame(block, block.id) : renderOrderGame(block, block.id));
     show("screen-order");
+  }
+
+  /* the Fun Zone challenge card launches this exam's signature game */
+  function startFunGame() {
+    const fg = curExam().funGame;
+    if (!fg) return;
+    openGame(fg.kind, fg.moduleId, fg.gameId, "home");
   }
 
   /* ===================================================
@@ -561,15 +888,15 @@
   function startQuiz(module) {
     const questions = shuffle(module.quiz).map(prepQ);
     quiz = { questions, index: 0, score: 0, mode: "module", module };
-    $("#quiz-title").textContent = module.emoji + " " + module.short + " Quiz";
+    $("#quiz-title").innerHTML = module.emoji + " " + esc(module.short) + " Quiz";
     renderQuestion();
     show("screen-quiz");
   }
 
   function startFinal() {
-    const questions = shuffle(APP_DATA.finalQuiz).map(prepQ);
+    const questions = shuffle(curExam().finalQuiz).map(prepQ);
     quiz = { questions, index: 0, score: 0, mode: "final", module: null };
-    $("#quiz-title").textContent = "🏆 Big Final Quiz";
+    $("#quiz-title").innerHTML = "🏆 " + esc(curExam().title) + " Final Quiz";
     renderQuestion();
     show("screen-quiz");
   }
@@ -586,7 +913,7 @@
     const total = quiz.questions.length;
     $("#quiz-counter").textContent = (quiz.index + 1) + " / " + total;
     $("#quiz-progress-fill").style.width = (quiz.index / total * 100) + "%";
-    $("#quiz-question").textContent = q.q;
+    $("#quiz-question").innerHTML = rich(q.q);
     $("#quiz-feedback").textContent = "";
     $("#quiz-feedback").className = "quiz-feedback";
     $("#quiz-next").classList.add("hidden");
@@ -594,7 +921,8 @@
     const box = $("#quiz-options");
     box.innerHTML = "";
     q.options.forEach((opt) => {
-      const btn = el("button", "opt", esc(opt));
+      const btn = el("button", "opt", rich(opt));
+      btn.dataset.opt = opt;
       btn.addEventListener("click", () => answer(btn, opt, q));
       box.appendChild(btn);
     });
@@ -616,12 +944,12 @@
       btn.classList.add("wrong");
       btn.innerHTML += '<span class="tick">❌</span>';
       buttons.forEach((b) => {
-        if (b.textContent.replace("❌", "").trim() === q.correct) {
+        if (b.dataset.opt === q.correct) {
           b.classList.add("correct");
           b.innerHTML += '<span class="tick">✅</span>';
         }
       });
-      fb.innerHTML = "💡 " + esc(q.explain);
+      fb.innerHTML = "💡 " + rich(q.explain);
       fb.className = "quiz-feedback bad";
       sfx.wrong();
     }
@@ -654,20 +982,20 @@
     const total = quiz.questions.length;
     const score = quiz.score;
     const stars = starsFor(score, total);
+    const p = P();
 
     if (quiz.mode === "module") {
       const id = quiz.module.id;
-      const prev = state.modules[id];
-      // keep the best score/stars if replayed
+      const prev = p.modules[id];
       if (!prev || score >= prev.score) {
-        state.modules[id] = { done: true, score, total, stars };
+        p.modules[id] = { done: true, score, total, stars };
       } else {
         prev.done = true;
-        state.modules[id] = prev;
+        p.modules[id] = prev;
       }
     } else {
-      if (!state.final || score >= state.final.score) {
-        state.final = { score, total, stars };
+      if (!p.final || score >= p.final.score) {
+        p.final = { score, total, stars };
       }
     }
     save();
@@ -705,13 +1033,10 @@
         const nextBtn = el("button", "big-btn", "Next chapter ➡");
         nextBtn.onclick = () => { sfx.click(); openModule(nextM.id); };
         actions.appendChild(nextBtn);
-      } else {
-        const allDone = MODULES.every((m) => state.modules[m.id] && state.modules[m.id].done);
-        if (allDone) {
-          const fb = el("button", "big-btn", "🏆 Final Quiz!");
-          fb.onclick = () => { sfx.click(); startFinal(); };
-          actions.appendChild(fb);
-        }
+      } else if (allChaptersDone()) {
+        const fb = el("button", "big-btn", "🏆 Final Quiz!");
+        fb.onclick = () => { sfx.click(); startFinal(); };
+        actions.appendChild(fb);
       }
     }
 
@@ -731,7 +1056,7 @@
   let game = null;
 
   function startGame() {
-    const pairs = shuffle(APP_DATA.memoryPairs).slice(0, 6); // 6 pairs = 12 cards
+    const pairs = shuffle(curExam().memoryPairs).slice(0, 6); // 6 pairs = 12 cards
     const cards = [];
     pairs.forEach((p, i) => {
       cards.push({ pair: i, text: p.a });
@@ -743,7 +1068,6 @@
     $("#game-pairs").textContent = "0";
     const board = $("#memory-board");
     board.innerHTML = "";
-    // remove any previous win banner
     const oldWin = $(".game-win"); if (oldWin) oldWin.remove();
 
     game.cards.forEach((c, idx) => {
@@ -752,7 +1076,7 @@
       card.innerHTML =
         `<div class="mcard-inner">
            <div class="mcard-face mcard-front">❓</div>
-           <div class="mcard-face mcard-back">${esc(c.text)}</div>
+           <div class="mcard-face mcard-back">${rich(c.text)}</div>
          </div>`;
       card.addEventListener("click", () => flipCard(idx, card));
       board.appendChild(card);
@@ -772,13 +1096,11 @@
       game.first = { idx, card, c };
       return;
     }
-    // second card
     game.moves++;
     $("#game-moves").textContent = game.moves;
 
     const first = game.first;
     if (first.c.pair === c.pair && first.idx !== idx) {
-      // match!
       first.card.classList.add("matched");
       card.classList.add("matched");
       game.first = null;
@@ -787,7 +1109,6 @@
       sfx.match(); confetti(20);
       if (game.matched === game.totalPairs) winGame();
     } else {
-      // no match, flip back
       game.lock = true;
       setTimeout(() => {
         first.card.classList.remove("flipped");
@@ -800,11 +1121,12 @@
 
   function winGame() {
     sfx.win(); confetti(140);
-    const best = state.bestMoves;
-    if (best == null || game.moves < best) { state.bestMoves = game.moves; save(); }
+    const p = P();
+    const best = p.memoryBest;
+    if (best == null || game.moves < best) { p.memoryBest = game.moves; save(); }
     const banner = el("div", "game-win",
       `<h3>🎉 You matched them all!</h3>
-       <p>You did it in <b>${game.moves}</b> tries. Best ever: <b>${state.bestMoves}</b> 🏅</p>`);
+       <p>You did it in <b>${game.moves}</b> tries. Best ever: <b>${p.memoryBest}</b> 🏅</p>`);
     const btn = el("button", "big-btn", "Play again 🔁");
     btn.onclick = () => { sfx.click(); startGame(); };
     banner.appendChild(btn);
@@ -830,17 +1152,16 @@
       }
     });
     $("#open-game").addEventListener("click", () => { sfx.click(); startGame(); });
-    $("#open-order").addEventListener("click", () => { sfx.click(); startOrderGame("home"); });
+    $("#open-order").addEventListener("click", () => { sfx.click(); startFunGame(); });
     $("#order-back").addEventListener("click", () => {
       sfx.click();
-      if (orderReturn && orderReturn !== "home") openModule(orderReturn);
+      if (gameReturn && gameReturn !== "home") openModule(gameReturn);
       else goHome();
     });
     $("#open-final").addEventListener("click", () => {
-      const allDone = MODULES.every((m) => state.modules[m.id] && state.modules[m.id].done);
-      if (!allDone) {
+      if (!allChaptersDone()) {
         sfx.wrong();
-        alert("Finish all 4 chapters first to power up for the Big Final Quiz! 💪");
+        alert("Finish all the chapters first to power up for the Big Final Quiz! 💪");
         return;
       }
       sfx.click(); startFinal();
@@ -851,6 +1172,7 @@
 
   /* ---------- boot ---------- */
   function boot() {
+    MODULES = curExam().modules;
     makeSparkles();
     initWelcome();
     wire();

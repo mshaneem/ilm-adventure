@@ -1,14 +1,16 @@
 /* ============================================================
    ILM ADVENTURE — Learning content & quizzes
-   All content below comes ONLY from the lessons/ folder:
-     chapter1.txt  -> The Five Pillars of Islam
-     chapter2.txt  -> Prophet Muhammad's life before Prophethood
-     chapter3.txt  -> Duas during Salah
-     chapter4.txt  -> The Journey of Hajj
+   The app now holds TWO exams (see APP_DATA at the bottom):
+     • ISLAMIC  — Term 1 Islamic Studies (chapters from lessons/)
+     • TAJWEED  — Level 3 Tajweed (content from the tajweed/ notes)
    A grown-up can safely edit the words here to add more practice.
    ============================================================ */
 
-const APP_DATA = {
+/* ===========================================================
+   EXAM 1 — ISLAMIC STUDIES (Term 1)
+   Content comes ONLY from the lessons/ folder.
+   =========================================================== */
+const ISLAMIC = {
 
   /* The learning modules (one per chapter). They appear as stops
      on the racing track in the order listed here. */
@@ -259,6 +261,7 @@ const APP_DATA = {
              The list below is the CORRECT order (same order as the journey above).
              The game shuffles it for the learner to fix. */
           type: "ordergame",
+          id: "hajjOrder",
           title: "Game: Put the Hajj steps in order!",
           intro: "The cards below are all mixed up! Use the ⬆ and ⬇ arrows (or drag them on a computer) to put the steps of Hajj in the right order, then press “Check my order”. 🏁",
           steps: [
@@ -346,6 +349,7 @@ const APP_DATA = {
         },
         {
           type: "ordergame",
+          id: "prayersOrder",
           title: "Game: Put the prayers in order!",
           intro: "The five daily prayers are all mixed up! Use the ⬆ and ⬇ arrows (or drag them on a computer) to put them in the right order, from the first prayer of the day to the last. ⏰",
           steps: [
@@ -587,5 +591,587 @@ const APP_DATA = {
     { a: "Al-Fatiha", b: "The opening surah (7 verses)" },
     { a: "Ar-Rahman", b: "The Most Gracious" },
     { a: "Al-Malik", b: "The King" }
+  ]
+};
+
+/* ===========================================================
+   EXAM 2 — TAJWEED (Level 3)
+   Content is based on the teacher's notes in the tajweed/ folder:
+     • Heavy & Light letters (Tafkheem / Tarqeeq)
+     • Changing letters (Laam in "Allah" and Raa)
+     • Sukoon
+     • Madd (stretching)
+     • Qalqalah (the bounce) and its 3 levels
+     • Identifying the rules in real surahs
+   =========================================================== */
+const TAJWEED = {
+
+  modules: [
+
+    /* ---------- TAJWEED CHAPTER 1: Heavy & Light Letters ---------- */
+    {
+      id: "heavy-light",
+      title: "Heavy & Light Letters",
+      short: "Heavy/Light",
+      emoji: "💪",
+      tagline: "Some letters are heavy and full, others are light and thin.",
+      blocks: [
+        {
+          type: "lead",
+          text: "In Tajweed, some letters are read HEAVY — with a big, full mouth (this is called Tafkheem 💪). Other letters are LIGHT — thin and soft (this is called Tarqeeq 🍃). There are 7 letters that are ALWAYS heavy. Every other letter is light. Let's meet the 7 heavy letters!"
+        },
+        {
+          type: "lettertiles",
+          variant: "heavy",
+          note: "The 7 letters that are ALWAYS heavy 💪",
+          tiles: [
+            { ar: "خ", name: "Khaa" },
+            { ar: "ص", name: "Saad" },
+            { ar: "ض", name: "Daad" },
+            { ar: "غ", name: "Ghayn" },
+            { ar: "ط", name: "Taa" },
+            { ar: "ق", name: "Qaaf" },
+            { ar: "ظ", name: "Dhaa" }
+          ]
+        },
+        {
+          type: "callout",
+          emoji: "🌟",
+          title: "Remember the 7 heavy letters!",
+          text: "خ ص ض غ ط ق ظ",
+          meaning: "Every other letter is light 🍃. Tip: a heavy letter fills your mouth like a big yawn; a light letter is thin like a smile."
+        },
+        {
+          type: "sortgame",
+          id: "hlSort",
+          title: "Game: Heavy or Light?",
+          intro: "Tap a letter to pick it up, then tap the box it belongs in. Put every letter in the right box and press Check! 💪🍃",
+          buckets: [
+            { id: "heavy", label: "Heavy 💪", hint: "full mouth" },
+            { id: "light", label: "Light 🍃", hint: "thin & soft" }
+          ],
+          items: [
+            { ar: "ق", tip: "Qaaf", cat: "heavy" },
+            { ar: "ص", tip: "Saad", cat: "heavy" },
+            { ar: "غ", tip: "Ghayn", cat: "heavy" },
+            { ar: "ط", tip: "Taa", cat: "heavy" },
+            { ar: "ب", tip: "Baa", cat: "light" },
+            { ar: "ف", tip: "Faa", cat: "light" },
+            { ar: "س", tip: "Seen", cat: "light" },
+            { ar: "ك", tip: "Kaaf", cat: "light" }
+          ]
+        }
+      ],
+      quiz: [
+        { q: "How do we read a HEAVY letter?",
+          options: ["With a big, full mouth", "Thin and soft", "Very fast", "Silently"], answer: 0,
+          explain: "A heavy letter (Tafkheem) is read with a big, full mouth." },
+        { q: "How many letters are ALWAYS heavy?",
+          options: ["7", "5", "3", "10"], answer: 0,
+          explain: "There are 7 always-heavy letters: خ ص ض غ ط ق ظ." },
+        { q: "Which of these is a HEAVY letter?",
+          options: ["ق", "ب", "س", "ف"], answer: 0,
+          explain: "ق (Qaaf) is one of the 7 heavy letters." },
+        { q: "Which of these is a LIGHT letter?",
+          options: ["ب", "ص", "ط", "غ"], answer: 0,
+          explain: "ب (Baa) is light. ص, ط and غ are all heavy." },
+        { q: "Reading a letter heavy and full is called…?",
+          options: ["Tafkheem", "Tarqeeq", "Madd", "Qalqalah"], answer: 0,
+          explain: "Tafkheem means making a letter heavy and full." },
+        { q: "Reading a letter light and thin is called…?",
+          options: ["Tarqeeq", "Tafkheem", "Sukoon", "Shaddah"], answer: 0,
+          explain: "Tarqeeq means making a letter light and thin." },
+        { q: "Is ط (Taa) heavy or light?",
+          options: ["Heavy", "Light"], answer: 0,
+          explain: "ط (Taa) is one of the 7 heavy letters." },
+        { q: "Is ك (Kaaf) heavy or light?",
+          options: ["Light", "Heavy"], answer: 0,
+          explain: "ك (Kaaf) is light — it is not one of the 7 heavy letters." }
+      ]
+    },
+
+    /* ---------- TAJWEED CHAPTER 2: Changing Letters (Laam & Raa) ---------- */
+    {
+      id: "changing",
+      title: "Changing Letters — Laam & Raa",
+      short: "Changing",
+      emoji: "🔄",
+      tagline: "Laam and Raa can change between heavy and light.",
+      blocks: [
+        {
+          type: "lead",
+          text: "Some special letters can CHANGE — sometimes heavy, sometimes light! The two changing letters are Laam (ل) in the word \"Allah\", and Raa (ر). What decides? The little vowel signs: Fatha ( َ ), Dammah ( ُ ) and Kasrah ( ِ ). Tap a card to see how they change."
+        },
+        {
+          type: "arflip",
+          cards: [
+            { ar: "وَاللّٰه", translit: "Wallahu", sub: "the sound before is 'a' (Fatha)",
+              back: "HEAVY Laam 💪 — say a deep, full \"Allah\"." },
+            { ar: "بِاللّٰه", translit: "Billahi", sub: "the sound before is 'ee' (Kasrah)",
+              back: "LIGHT Laam 🍃 — say a soft, gentle \"Allah\"." },
+            { ar: "رَبُّكُم", translit: "Rabbukum", sub: "the Raa has a Fatha ( َ )",
+              back: "HEAVY Raa 💪 — a strong, deep \"RRR\"." },
+            { ar: "رِزْقًا", translit: "Rizqan", sub: "the Raa has a Kasrah ( ِ )",
+              back: "LIGHT Raa 🍃 — a soft, thin \"r\"." }
+          ]
+        },
+        {
+          type: "callout",
+          emoji: "🎯",
+          title: "Easy trick!",
+          text: "\"ee\" sound (Kasrah) → LIGHT · \"a\" or \"u\" sound (Fatha/Dammah) → HEAVY",
+          meaning: "This works for both the Laam in \"Allah\" and the letter Raa."
+        },
+        {
+          type: "sortgame",
+          id: "raaSort",
+          title: "Game: Is the Raa Heavy or Light?",
+          intro: "Look at the vowel on the Raa (ر). Fatha or Dammah = heavy 💪. Kasrah = light 🍃. Sort them all!",
+          buckets: [
+            { id: "heavy", label: "Heavy Raa 💪", hint: "Fatha / Dammah" },
+            { id: "light", label: "Light Raa 🍃", hint: "Kasrah" }
+          ],
+          items: [
+            { ar: "رَبّ", tip: "Rabb", cat: "heavy" },
+            { ar: "رَحْمٰن", tip: "Rahmaan", cat: "heavy" },
+            { ar: "رُسُل", tip: "Rusul", cat: "heavy" },
+            { ar: "رِزْق", tip: "Rizq", cat: "light" },
+            { ar: "رِجَال", tip: "Rijaal", cat: "light" },
+            { ar: "رِيح", tip: "Reeh", cat: "light" }
+          ]
+        }
+      ],
+      quiz: [
+        { q: "The two CHANGING letters are…?",
+          options: ["Laam & Raa", "Baa & Taa", "Seen & Sheen", "Alif & Waw"], answer: 0,
+          explain: "Laam (in \"Allah\") and Raa can change between heavy and light." },
+        { q: "In \"Wallahu\" (وَاللّٰه), the sound before is 'a' (Fatha), so the Laam is…?",
+          options: ["Heavy", "Light"], answer: 0,
+          explain: "After a Fatha or Dammah, the Laam in \"Allah\" is heavy." },
+        { q: "In \"Billahi\" (بِاللّٰه), the sound before is 'ee' (Kasrah), so the Laam is…?",
+          options: ["Light", "Heavy"], answer: 0,
+          explain: "After a Kasrah, the Laam in \"Allah\" is light." },
+        { q: "Raa with a Kasrah ( ِ ) is…?",
+          options: ["Light", "Heavy"], answer: 0,
+          explain: "A Kasrah ('ee' sound) makes the Raa light." },
+        { q: "Raa with a Fatha ( َ ) or Dammah ( ُ ) is…?",
+          options: ["Heavy", "Light"], answer: 0,
+          explain: "Fatha ('a') or Dammah ('u') makes the Raa heavy." },
+        { q: "In \"Rabbukum\" (رَبُّكُم), the Raa is…?",
+          options: ["Heavy", "Light"], answer: 0,
+          explain: "The Raa has a Fatha, so it is heavy — a deep \"RRR\"." },
+        { q: "In \"Rizqan\" (رِزْقًا), the Raa is…?",
+          options: ["Light", "Heavy"], answer: 0,
+          explain: "The Raa has a Kasrah, so it is light and thin." },
+        { q: "The 'ee' (Kasrah) sound makes a changing letter…?",
+          options: ["Light", "Heavy"], answer: 0,
+          explain: "\"ee\" (Kasrah) → light. \"a\"/\"u\" (Fatha/Dammah) → heavy." }
+      ]
+    },
+
+    /* ---------- TAJWEED CHAPTER 3: Sukoon ---------- */
+    {
+      id: "sukoon",
+      title: "Sukoon — the Stop Sign",
+      short: "Sukoon",
+      emoji: "🛑",
+      tagline: "A letter with no vowel — stop quickly, don't stretch.",
+      blocks: [
+        {
+          type: "lead",
+          text: "Sukoon ( ْ ) is a tiny circle ○ on top of a letter. It means the letter has NO vowel — no Fatha, no Kasrah, no Dammah. When a letter has sukoon we stop quickly on it and join it to the letter before. We do NOT stretch it!"
+        },
+        {
+          type: "callout",
+          emoji: "🚦",
+          title: "Think of Sukoon like a RED LIGHT in a race!",
+          text: "Stop quickly on the letter and don't stretch it.",
+          meaning: "The sukoon letter is the one with the little circle ○ on top."
+        },
+        {
+          type: "arflip",
+          cards: [
+            { ar: "بَكْر", translit: "Bakr", sub: "which letter has the ○?",
+              back: "The ك (Kaaf) has sukoon — read it short, joined to the letter before." },
+            { ar: "نُور", translit: "Noor", sub: "which letter has the ○?",
+              back: "The ر (Raa) has sukoon — a short \"r\", not \"Raaa\"." },
+            { ar: "حَمْد", translit: "Hamd", sub: "which letter has the ○?",
+              back: "The م (Meem) has sukoon — read it quickly with no vowel." },
+            { ar: "ذِكْر", translit: "Dhikr", sub: "which letter has the ○?",
+              back: "The ك (Kaaf) has sukoon — stop quickly, joined to the ذ before." }
+          ]
+        }
+      ],
+      quiz: [
+        { q: "Sukoon means the letter has…?",
+          options: ["No vowel", "Two vowels", "A long stretch", "A bounce"], answer: 0,
+          explain: "Sukoon means the letter has no vowel (no Fatha, Kasrah or Dammah)." },
+        { q: "The sukoon sign looks like a…?",
+          options: ["Small circle ○", "Straight line", "Big dot", "Star"], answer: 0,
+          explain: "Sukoon is a small circle ○ placed on top of a letter." },
+        { q: "When a letter has sukoon we…?",
+          options: ["Stop quickly and don't stretch", "Stretch it long", "Skip it", "Say it twice"], answer: 0,
+          explain: "We stop quickly on the letter and do not stretch it." },
+        { q: "A letter with sukoon joins with the letter…?",
+          options: ["Before it", "After it", "At the very end", "In another word"], answer: 0,
+          explain: "A sukoon letter joins with the letter before it." },
+        { q: "In \"Noor\" (نُور), which letter has the sukoon?",
+          options: ["ر (Raa)", "ن (Noon)", "و (Waw)"], answer: 0,
+          explain: "The ر (Raa) has the sukoon ○ — read it short." },
+        { q: "In \"Bakr\" (بَكْر), which letter has the sukoon?",
+          options: ["ك (Kaaf)", "ب (Baa)", "ر (Raa)"], answer: 0,
+          explain: "The ك (Kaaf) has the sukoon ○." },
+        { q: "Do we stretch a letter that has sukoon?",
+          options: ["No, we stop quickly", "Yes, very long", "Yes, a little"], answer: 0,
+          explain: "No — sukoon means stop quickly, don't stretch." },
+        { q: "Sukoon is like which traffic light?",
+          options: ["Red 🚦 (stop)", "Green (go)", "Yellow (slow)"], answer: 0,
+          explain: "Sukoon is like a red light — stop quickly on the letter!" }
+      ]
+    },
+
+    /* ---------- TAJWEED CHAPTER 4: Madd ---------- */
+    {
+      id: "madd",
+      title: "Madd — the Stretch",
+      short: "Madd",
+      emoji: "〰️",
+      tagline: "Stretch the sound smoothly, for 2 counts.",
+      blocks: [
+        {
+          type: "lead",
+          text: "Madd means to STRETCH a sound. We stretch it smoothly for 2 counts — like \"Aaa\". It is smooth, NOT bouncy! There are 3 Madd letters: Alif (ا), Waw (و) and Yaa (ي). A Madd letter has NO vowel sign on it."
+        },
+        {
+          type: "lettertiles",
+          variant: "madd",
+          note: "The 3 Madd letters 〰️",
+          tiles: [
+            { ar: "ا", name: "Alif", sub: "after Fatha → \"Aaa\"" },
+            { ar: "و", name: "Waw", sub: "after Dammah → \"Ooo\"" },
+            { ar: "ي", name: "Yaa", sub: "after Kasrah → \"Eee\"" }
+          ]
+        },
+        {
+          type: "arflip",
+          cards: [
+            { ar: "بَا", translit: "Baa", sub: "Alif after Fatha", back: "Stretch: \"Baaa\" 〰️ (2 counts)." },
+            { ar: "بُو", translit: "Boo", sub: "Waw after Dammah", back: "Stretch: \"Booo\" 〰️ (2 counts)." },
+            { ar: "بِي", translit: "Bee", sub: "Yaa after Kasrah", back: "Stretch: \"Beee\" 〰️ (2 counts)." },
+            { ar: "قَال", translit: "Qaal", sub: "Alif after Fatha on ق", back: "Stretch: \"Qaaal\" 〰️." },
+            { ar: "نُور", translit: "Noor", sub: "Waw after Dammah on ن", back: "Stretch: \"Nooor\" 〰️." },
+            { ar: "فِيل", translit: "Feel", sub: "Yaa after Kasrah on ف", back: "Stretch: \"Feeel\" 〰️." }
+          ]
+        },
+        {
+          type: "callout",
+          emoji: "🎯",
+          title: "Remember!",
+          text: "Stretch Madd for 2 counts — smooth and long.",
+          meaning: "NO Madd if there's no Alif, Waw or Yaa. And Madd is smooth — not bouncy like Qalqalah!"
+        },
+        {
+          type: "sortgame",
+          id: "maddSort",
+          title: "Game: Has Madd or No Madd?",
+          intro: "Does the word have a stretch (Alif ا, Waw و, or Yaa ي with no vowel)? Sort them! 〰️✋",
+          buckets: [
+            { id: "madd", label: "Has Madd 〰️", hint: "there's a stretch" },
+            { id: "no", label: "No Madd ✋", hint: "no ا و ي" }
+          ],
+          items: [
+            { ar: "نُور", tip: "Noor", cat: "madd" },
+            { ar: "قَال", tip: "Qaal", cat: "madd" },
+            { ar: "فِيل", tip: "Feel", cat: "madd" },
+            { ar: "كَتَبَ", tip: "Kataba", cat: "no" },
+            { ar: "مَلِك", tip: "Malik", cat: "no" },
+            { ar: "أَحَد", tip: "Ahad", cat: "no" }
+          ]
+        }
+      ],
+      quiz: [
+        { q: "Madd means to…?",
+          options: ["Stretch a sound", "Stop quickly", "Bounce", "Read it heavy"], answer: 0,
+          explain: "Madd means to stretch a sound smoothly." },
+        { q: "The 3 Madd letters are…?",
+          options: ["ا و ي", "ب ت ث", "ق ط ب", "خ ص ض"], answer: 0,
+          explain: "The 3 Madd letters are Alif (ا), Waw (و) and Yaa (ي)." },
+        { q: "How many counts do we stretch a Madd?",
+          options: ["2", "5", "1", "10"], answer: 0,
+          explain: "We stretch Madd for 2 counts." },
+        { q: "Is Madd smooth or bouncy?",
+          options: ["Smooth", "Bouncy"], answer: 0,
+          explain: "Madd is one smooth stretch — not bouncy like Qalqalah." },
+        { q: "A Madd letter has…?",
+          options: ["No vowel sign on it", "A Fatha", "A Shaddah", "A bounce"], answer: 0,
+          explain: "Madd letters don't have a harakah (no Fatha, Dammah or Kasrah)." },
+        { q: "After a Kasrah ( ِ ), the Madd letter is…?",
+          options: ["Yaa (ي) → \"Eee\"", "Waw (و) → \"Ooo\"", "Alif (ا) → \"Aaa\""], answer: 0,
+          explain: "A Kasrah is followed by Yaa (ي) to make an \"Eee\" stretch." },
+        { q: "After a Dammah ( ُ ), the Madd letter is…?",
+          options: ["Waw (و) → \"Ooo\"", "Yaa (ي) → \"Eee\"", "Alif (ا) → \"Aaa\""], answer: 0,
+          explain: "A Dammah is followed by Waw (و) to make an \"Ooo\" stretch." },
+        { q: "Is there Madd in \"Malik\" (مَلِك)?",
+          options: ["No — there's no Alif, Waw or Yaa", "Yes, a long one"], answer: 0,
+          explain: "There is no Madd letter in \"Malik\", so there's no stretch." }
+      ]
+    },
+
+    /* ---------- TAJWEED CHAPTER 5: Qalqalah ---------- */
+    {
+      id: "qalqalah-ch",
+      title: "Qalqalah — the Bounce",
+      short: "Qalqalah",
+      emoji: "⚡",
+      tagline: "The bouncing echo of 5 special letters.",
+      blocks: [
+        {
+          type: "lead",
+          text: "Qalqalah means a BOUNCE or ECHO sound! It happens when 5 special letters have a sukoon ○. It's like a tiny pop or bounce at the end. The 5 Qalqalah letters are: ق ط ب ج د."
+        },
+        {
+          type: "lettertiles",
+          variant: "qalqalah",
+          note: "The 5 Qalqalah letters ⚡",
+          tiles: [
+            { ar: "ق", name: "Qaaf" },
+            { ar: "ط", name: "Taa" },
+            { ar: "ب", name: "Baa" },
+            { ar: "ج", name: "Jeem" },
+            { ar: "د", name: "Daal" }
+          ]
+        },
+        {
+          type: "callout",
+          emoji: "🎵",
+          title: "Remember the 5 Qalqalah letters!",
+          text: "ق ط ب ج د",
+          meaning: "They bounce when they have a sukoon ○. Try saying them together: \"Qutb Jad\"!"
+        },
+        {
+          type: "levels",
+          title: "The 3 Levels of Qalqalah",
+          items: [
+            { color: "green", name: "Small (Sughra) 🟢", ar: "أَجْرْ",
+              desc: "The bounce is in the MIDDLE of a word and you keep going. This is the smallest bounce.",
+              tip: "the ج bounces a little" },
+            { color: "amber", name: "Medium (Wusta) 🟡", ar: "أَحَدْ",
+              desc: "You STOP on the letter at the END of a word or ayah (with no shaddah). A bigger bounce.",
+              tip: "the د bounces more" },
+            { color: "red", name: "Big (Kubra) 🔴", ar: "وَتَبَّ",
+              desc: "You STOP at the end AND the letter has a Shaddah ( ّ ). This is the BIGGEST bounce!",
+              tip: "the ب bounces the most" }
+          ]
+        },
+        {
+          type: "callout",
+          emoji: "🌟",
+          title: "Important!",
+          text: "At the END of an ayah you might NOT see the sukoon circle ○…",
+          meaning: "…but the sukoon is still there — so the letter still bounces!"
+        },
+        {
+          type: "sortgame",
+          id: "qalqalahSort",
+          title: "Game: Which Qalqalah Level?",
+          intro: "Middle of a word = Small 🟢. Stop at the end (no shaddah) = Medium 🟡. Stop at the end WITH a shaddah = Big 🔴. Sort them all!",
+          buckets: [
+            { id: "small", label: "Small 🟢", hint: "middle of word" },
+            { id: "medium", label: "Medium 🟡", hint: "stop, no shaddah" },
+            { id: "big", label: "Big 🔴", hint: "stop + shaddah" }
+          ],
+          items: [
+            { ar: "أَجْرْ", tip: "aj-r", cat: "small" },
+            { ar: "أَقْبَلَ", tip: "aq-bala", cat: "small" },
+            { ar: "أَحَدْ", tip: "a-had", cat: "medium" },
+            { ar: "وَقَبْ", tip: "wa-qab", cat: "medium" },
+            { ar: "وَتَبَّ", tip: "wa-tabb", cat: "big" },
+            { ar: "الْحَقّْ", tip: "al-haqq", cat: "big" }
+          ]
+        }
+      ],
+      quiz: [
+        { q: "Qalqalah means a…?",
+          options: ["Bounce or echo", "Long stretch", "Silence", "Heavy sound"], answer: 0,
+          explain: "Qalqalah is a bounce or echo sound." },
+        { q: "How many Qalqalah letters are there?",
+          options: ["5", "7", "3", "10"], answer: 0,
+          explain: "There are 5 Qalqalah letters: ق ط ب ج د." },
+        { q: "The Qalqalah letters are…?",
+          options: ["ق ط ب ج د", "ا و ي", "خ ص ض غ", "ل ر ن م"], answer: 0,
+          explain: "The 5 Qalqalah letters are ق ط ب ج د." },
+        { q: "Qalqalah happens when a Qalqalah letter has a…?",
+          options: ["Sukoon ○", "Fatha", "Madd", "Kasrah"], answer: 0,
+          explain: "A Qalqalah letter bounces when it has a sukoon." },
+        { q: "Which of these is a Qalqalah letter?",
+          options: ["ق", "س", "ف", "م"], answer: 0,
+          explain: "ق (Qaaf) is one of the 5 Qalqalah letters." },
+        { q: "SMALL Qalqalah is when the bounce is…?",
+          options: ["In the middle of a word", "At the end with a shaddah", "At the end with no shaddah"], answer: 0,
+          explain: "Small (Sughra) Qalqalah is a bounce in the middle of a word." },
+        { q: "MEDIUM Qalqalah is when you STOP at the end…?",
+          options: ["With no shaddah", "In the middle", "With a shaddah"], answer: 0,
+          explain: "Medium (Wusta) Qalqalah is stopping at the end with no shaddah." },
+        { q: "BIG Qalqalah is when you stop at the end AND the letter has a…?",
+          options: ["Shaddah ( ّ )", "Kasrah", "Madd"], answer: 0,
+          explain: "Big (Kubra) Qalqalah is stopping at the end with a shaddah." },
+        { q: "In \"Watabba\" (وَتَبَّ), the bounce is…?",
+          options: ["Big (stop + shaddah)", "Small (middle)", "No bounce"], answer: 0,
+          explain: "وَتَبَّ ends with a shaddah and you stop — so it's Big Qalqalah." },
+        { q: "At the end of an ayah, even with no circle ○, the sukoon…?",
+          options: ["Is still there", "Disappears", "Becomes a Fatha"], answer: 0,
+          explain: "The sukoon is still there, so the letter still bounces." }
+      ]
+    },
+
+    /* ---------- TAJWEED CHAPTER 6: Reading the Surahs ---------- */
+    {
+      id: "surahs",
+      title: "Spotting Rules in the Surahs",
+      short: "The Surahs",
+      emoji: "📿",
+      tagline: "Put it all together and find the rules in real surahs.",
+      blocks: [
+        {
+          type: "lead",
+          text: "Now let's put it all together and spot the rules in real surahs! Look for heavy letters, changing letters (Laam & Raa) and Qalqalah bounces. Tap each surah card."
+        },
+        {
+          type: "journey",
+          stops: [
+            { day: "Surah An-Naas", title: "Heavy letters & the changing Raa", emoji: "📖",
+              text: "Find heavy letters like ق in قُلْ. The Raa is HEAVY in بِرَبِّ (it has a Fatha), but LIGHT in صُدُور (it has a Kasrah). صُدُور also hides a heavy letter — the ص (Saad)!" },
+            { day: "Surah Quraysh", title: "Heavy letters & Raa again", emoji: "🕋",
+              text: "Spot the heavy letters (خ ص ض غ ط ق ظ). The Raa is LIGHT in قُرَيْش because it has a Kasrah. When a Raa has a Fatha on top instead, it becomes HEAVY." },
+            { day: "Surah Al-Falaq", title: "All Medium Qalqalah 🟡", emoji: "🌅",
+              text: "In Surah Al-Falaq, all the Qalqalah is MEDIUM — because the bounce is at the end of the ayah with no shaddah. Listen for it in الْفَلَقْ, وَقَبْ, الْعُقَدْ and حَاسِدْ." },
+            { day: "Surah Al-Masad", title: "Find the Big Qalqalah 🔴", emoji: "🔥",
+              text: "Here you can find BIG Qalqalah in وَتَبَّ — the ب has a shaddah AND you stop, so it's the biggest bounce. Also look for the Shaddah ( ّ ) sign in the surah." }
+          ]
+        },
+        {
+          type: "callout",
+          emoji: "🏆",
+          title: "You did it! Quick recap:",
+          text: "7 heavy letters · changing Laam & Raa · Sukoon = stop · Madd = stretch (2 counts) · Qalqalah = bounce (3 levels)",
+          meaning: "Take the quiz to show how much you know — you're ready for the Tajweed exam! 🌟"
+        }
+      ],
+      quiz: [
+        { q: "In Surah Al-Falaq, the Qalqalah is which level?",
+          options: ["Medium 🟡", "Big 🔴", "Small 🟢"], answer: 0,
+          explain: "All the Qalqalah in Al-Falaq is Medium — a stop at the end with no shaddah." },
+        { q: "In \"watabba\" (وَتَبَّ) in Surah Al-Masad, the Qalqalah is…?",
+          options: ["Big 🔴", "Small 🟢", "Medium 🟡"], answer: 0,
+          explain: "وَتَبَّ has a shaddah and you stop, so it's Big Qalqalah." },
+        { q: "In \"biRabbi\" (بِرَبِّ), the Raa has a Fatha, so it is…?",
+          options: ["Heavy", "Light"], answer: 0,
+          explain: "A Fatha on the Raa makes it heavy." },
+        { q: "In \"Sudoor\" (صُدُور), the Raa has a Kasrah, so it is…?",
+          options: ["Light", "Heavy"], answer: 0,
+          explain: "A Kasrah on the Raa makes it light." },
+        { q: "\"Sudoor\" (صُدُور) also has a heavy letter — which one?",
+          options: ["ص (Saad)", "د (Daal)", "ر (Raa)"], answer: 0,
+          explain: "ص (Saad) is one of the 7 always-heavy letters." },
+        { q: "In \"Qul\" (قُلْ), which is the heavy letter?",
+          options: ["ق (Qaaf)", "ل (Laam)", "و (Waw)"], answer: 0,
+          explain: "ق (Qaaf) is a heavy letter." },
+        { q: "The Shaddah on وَتَبَّ makes the bounce…?",
+          options: ["Bigger (Big Qalqalah)", "Smaller", "Disappear"], answer: 0,
+          explain: "A shaddah plus stopping makes the biggest bounce — Big Qalqalah." },
+        { q: "Which surah is a great place to find BIG Qalqalah?",
+          options: ["Al-Masad", "An-Naas", "Al-Falaq"], answer: 0,
+          explain: "Surah Al-Masad has Big Qalqalah in وَتَبَّ." }
+      ]
+    }
+  ],
+
+  /* The big final quiz — a mix from every Tajweed chapter. */
+  finalQuiz: [
+    { q: "How many letters are ALWAYS heavy?",
+      options: ["7", "5", "3", "10"], answer: 0, explain: "There are 7 heavy letters: خ ص ض غ ط ق ظ." },
+    { q: "Reading a letter heavy and full is called…?",
+      options: ["Tafkheem", "Tarqeeq", "Madd", "Qalqalah"], answer: 0, explain: "Tafkheem = heavy and full." },
+    { q: "Which of these is a HEAVY letter?",
+      options: ["ص", "ب", "س", "ك"], answer: 0, explain: "ص (Saad) is one of the 7 heavy letters." },
+    { q: "The two CHANGING letters are…?",
+      options: ["Laam & Raa", "Baa & Taa", "Alif & Waw", "Seen & Sheen"], answer: 0, explain: "Laam (in Allah) and Raa change." },
+    { q: "Raa with a Kasrah ( ِ ) is…?",
+      options: ["Light", "Heavy"], answer: 0, explain: "\"ee\" (Kasrah) → light Raa." },
+    { q: "In \"Wallahu\" (وَاللّٰه), the Laam is…?",
+      options: ["Heavy", "Light"], answer: 0, explain: "A Fatha before \"Allah\" makes the Laam heavy." },
+    { q: "Sukoon means the letter has…?",
+      options: ["No vowel", "Two vowels", "A long stretch", "A bounce"], answer: 0, explain: "Sukoon = no vowel." },
+    { q: "When a letter has sukoon we…?",
+      options: ["Stop quickly, don't stretch", "Stretch it long", "Skip it"], answer: 0, explain: "Stop quickly on it." },
+    { q: "Madd means to…?",
+      options: ["Stretch a sound", "Bounce", "Stop quickly", "Read it heavy"], answer: 0, explain: "Madd = stretch." },
+    { q: "The 3 Madd letters are…?",
+      options: ["ا و ي", "ق ط ب", "خ ص ض", "ب ت ث"], answer: 0, explain: "Alif, Waw and Yaa." },
+    { q: "How many counts do we stretch a Madd?",
+      options: ["2", "5", "1", "10"], answer: 0, explain: "We stretch Madd for 2 counts." },
+    { q: "Qalqalah means a…?",
+      options: ["Bounce or echo", "Stretch", "Silence", "Heavy sound"], answer: 0, explain: "Qalqalah = bounce/echo." },
+    { q: "The Qalqalah letters are…?",
+      options: ["ق ط ب ج د", "ا و ي", "خ ص ض غ", "ل ر ن م"], answer: 0, explain: "ق ط ب ج د." },
+    { q: "Qalqalah happens when a Qalqalah letter has a…?",
+      options: ["Sukoon ○", "Fatha", "Madd", "Kasrah"], answer: 0, explain: "A sukoon makes it bounce." },
+    { q: "BIG Qalqalah is when you stop at the end AND the letter has a…?",
+      options: ["Shaddah ( ّ )", "Kasrah", "Madd"], answer: 0, explain: "Stop + shaddah = Big Qalqalah." },
+    { q: "In Surah Al-Falaq, the Qalqalah is which level?",
+      options: ["Medium 🟡", "Big 🔴", "Small 🟢"], answer: 0, explain: "All Medium — stop at the end, no shaddah." },
+    { q: "Is Madd smooth or bouncy?",
+      options: ["Smooth", "Bouncy"], answer: 0, explain: "Madd is smooth; Qalqalah is bouncy." },
+    { q: "Reading a letter light and thin is called…?",
+      options: ["Tarqeeq", "Tafkheem", "Sukoon", "Shaddah"], answer: 0, explain: "Tarqeeq = light and thin." }
+  ],
+
+  /* Pairs for the Memory Match game (Fun Zone). */
+  memoryPairs: [
+    { a: "Tafkheem", b: "Heavy (full mouth)" },
+    { a: "Tarqeeq", b: "Light (thin & soft)" },
+    { a: "Sukoon ○", b: "No vowel — stop quickly" },
+    { a: "Madd", b: "Stretch for 2 counts" },
+    { a: "Qalqalah", b: "Bounce / echo" },
+    { a: "ق ط ب ج د", b: "The 5 Qalqalah letters" },
+    { a: "خ ص ض غ ط ق ظ", b: "The 7 heavy letters" },
+    { a: "ا و ي", b: "The 3 Madd letters" },
+    { a: "Shaddah ّ", b: "Doubles the letter" },
+    { a: "Changing letters", b: "Laam & Raa" },
+    { a: "Small Qalqalah 🟢", b: "Bounce in the middle" },
+    { a: "Big Qalqalah 🔴", b: "Stop + Shaddah" }
+  ]
+};
+
+/* ===========================================================
+   THE TWO EXAMS — this is what the app reads.
+   Each exam has its own chapters, final quiz and games.
+   =========================================================== */
+const APP_DATA = {
+  exams: [
+    {
+      id: "islamic",
+      title: "Islamic Studies",
+      subtitle: "Term 1 · 7 chapters",
+      emoji: "🕌",
+      blurb: "The Five Pillars, the Prophet ﷺ, Salah duas, Hajj, prayer times, Al-Fatiha & the Names of Allah.",
+      funGame: { kind: "order", moduleId: "hajj", gameId: "hajjOrder",
+                 emoji: "🕋", title: "Hajj Order Challenge", desc: "Put the steps of Hajj in order!" },
+      modules: ISLAMIC.modules,
+      finalQuiz: ISLAMIC.finalQuiz,
+      memoryPairs: ISLAMIC.memoryPairs
+    },
+    {
+      id: "tajweed",
+      title: "Tajweed",
+      subtitle: "Level 3 · 6 chapters",
+      emoji: "📖",
+      blurb: "Heavy & light letters, changing Laam & Raa, Sukoon, Madd, Qalqalah and reading the surahs beautifully.",
+      funGame: { kind: "sort", moduleId: "qalqalah-ch", gameId: "qalqalahSort",
+                 emoji: "🌈", title: "Qalqalah Levels Sort", desc: "Sort the bounces: Small, Medium & Big!" },
+      modules: TAJWEED.modules,
+      finalQuiz: TAJWEED.finalQuiz,
+      memoryPairs: TAJWEED.memoryPairs
+    }
   ]
 };

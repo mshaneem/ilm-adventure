@@ -47,18 +47,22 @@
       <div class="welcome-card">
         <div class="welcome-moon">🌙</div>
         <h1 class="welcome-title">Ilm Adventure</h1>
-        <p class="welcome-sub">A sparkly journey to get ready for your Term 1 exam! ✨</p>
+        <p class="welcome-sub">A sparkly journey to get ready for your ILM exams — Islamic Studies &amp; Tajweed! ✨</p>
         <p class="welcome-q">What is your name?</p>
         <input type="text" id="name-input" maxlength="16" placeholder="Type your name here…" autocomplete="off" />
         <button class="big-btn" id="start-btn">Let's Go! 🚀</button>
-        <p class="welcome-foot">You'll learn 4 chapters, play a game, and take a big final quiz. Ready? 💖</p>
+        <p class="welcome-foot">Learn each chapter, play games, and take a big final quiz for every exam. Ready? 💖</p>
       </div>
     </section>
 
     <!-- ===================== HOME ===================== -->
     <section id="screen-home" class="screen hidden">
       <h1 class="home-greeting" id="home-greeting">Hi! 👋</h1>
-      <p class="home-tag">Finish each stop to help yourself zoom along the track! 🏁</p>
+      <p class="home-tag">Pick an exam, finish each stop, and zoom along the track! 🏁</p>
+
+      <!-- Exam picker -->
+      <div class="exam-tabs" id="exam-tabs"></div>
+      <p class="exam-blurb" id="exam-blurb"></p>
 
       <!-- Racing track progress -->
       <div class="track-wrap">
@@ -73,12 +77,12 @@
         <button class="fun-card game-card" id="open-game">
           <span class="fun-emoji">🧠</span>
           <span class="fun-title">Memory Match</span>
-          <span class="fun-desc">Match the words to their meanings!</span>
+          <span class="fun-desc" id="game-card-desc">Match the words to their meanings!</span>
         </button>
         <button class="fun-card order-fun-card" id="open-order">
-          <span class="fun-emoji">🕋</span>
-          <span class="fun-title">Hajj Order Challenge</span>
-          <span class="fun-desc" id="order-card-desc">Put the steps of Hajj in order!</span>
+          <span class="fun-emoji" id="challenge-emoji">🕋</span>
+          <span class="fun-title" id="challenge-title">Hajj Order Challenge</span>
+          <span class="fun-desc" id="challenge-desc">Put the steps of Hajj in order!</span>
         </button>
         <button class="fun-card final-card" id="open-final">
           <span class="fun-emoji">🏆</span>
